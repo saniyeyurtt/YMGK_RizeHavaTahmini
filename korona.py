@@ -65,4 +65,94 @@ grafik("NO ( µg/m³ )","NO ( µg/m³ )")
 grafik("O3 ( µg/m³ )","O3 ( µg/m³ )")
 
 
+#%%
+
+ 
+# Grafik için gerekli kütüphaneler. Axes3D 3 boyutlu bir grafik için.
+from matplotlib import pyplot as  plt
+from mpl_toolkits.mplot3d import Axes3D
+ 
+class knn():
+
+    def __init__(self, dataset, k, nfrom, nto):
+        self.b, self.g, self.r, self.class_attr = [], [], [], []
+        self.inp = [264,124,183]
+        self.k = k
+ 
+    # Veri setimizi nfrom satırından nto satırına kadar okuyoruz.
+    # Ayrıca veri setindeki her sutunu bir listeye atıyoruz. (r,g,b,class_attr)
+        with open(dataset, "r") as f:
+            for i in f.readlines()[nfrom:nto]:
+                self.r.append(int(i.split()[0]))
+                self.g.append(int(i.split()[1]))
+                self.b.append(int(i.split()[2]))
+                self.class_attr.append(i.split()[3])
+ 
+
+    # öklid = 2, manhattan=1
+    def distance(self, dist=1):
+        self.dist = []
+        # for döngüsündeki karışık gibi gelen üs alma, mutlak değer gibi işlemler
+        # minkowski formulunun karşılığından ibarettir.
+        for i in range(len(self.class_attr)):
+            self.dist.append((pow((pow((
+            abs(int(self.b[i]) - int(self.inp[0])) +
+            abs(int(self.g[i]) - int(self.inp[1])) +
+            abs(int(self.r[i]) - int(self.inp[2]))), dist)), 1/dist), i))
+ 
+        return self.dist
+ 
+
+    def findClass(self):
+        self.class_values = []
+        self.result = ""
+ 
+        for i in sorted(self.dist)[:self.k]:
+            self.class_values.append(self.class_attr[i[1]])
+ 
+        self.first = self.class_values.count("1")
+        self.secnd = self.class_values.count("2")
+ 
+        print("Birinci Sınıf:", self.first)
+        print("İkinci Sınıf:", self.secnd)
+ 
+        if self.first > self.secnd:
+            self.result = "1. Sınıf(Kırmızı)"
+        else:
+            self.result = "2. Sınıf(Yeşil)"
+ 
+        print("SONUÇ: "+self.result)
+ 
+#GORSELLEŞTİRME
+
+    def grafik(self):
+        fig = plt.figure()
+        ax  = fig.add_subplot(111, projection='3d')
+ 
+        for bi, gj, rk, class_attr in zip(self.b, self.g, self.r, self.class_attr):
+         if class_attr == "1":
+          ax.scatter(bi,gj,rk, c='r', marker='.')
+         else:
+          ax.scatter(bi,gj,rk, c='g', marker='.')
+ 
+        ax.scatter(int(self.inp[0]), int(self.inp[1]), int(self.inp[2]), c='b')
+        ax.set_xlabel('X Ekseni')
+        ax.set_ylabel('Y Ekseni')
+        ax.set_zlabel('Z Ekseni')
+ 
+        fig.text(0, 0, "Kırmızı(1)[PM10] : "+str(self.first)+
+                " -- Yeşil(2)[SO2] : "+str(self.secnd)+
+                " -- {{SONUÇ : "+self.result+"}}")
+ 
+        plt.legend()
+        plt.show()
+ 
+# Sınıfımızdan nesne türetip gerekli metodlarımızı çağırıyoruz. En yakın 17 komşuya bakıyoruz. Ola ki eşit çıkma durumu olduğundan k değerinin tek seçilmesinde yarar vardır. Ve sonuç.
+ins = knn("ten_dataset.txt", 17, 50300, 51000)
+ins.distance(1)
+ins.findClass()
+ins.grafik()
+ 
+ 
+
 
